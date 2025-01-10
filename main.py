@@ -147,7 +147,8 @@ def asignar_gestor_proyecto():
         if len(proyecto_exist.json) == 0:
             return jsonify({"error": "No existe el proyecto"}), 404
 
-        query = f"INSERT INTO public.\"GestoresProyecto\" (gestor, proyecto, fecha_asignacion) VALUES ('{gestor}', '{proyecto}', NOW());"
+        #query = f"INSERT INTO public.\"GestoresProyecto\" (gestor, proyecto, fecha_asignacion) VALUES ('{gestor}', '{proyecto}', NOW());"
+        query = f"UPDATE public.\"GestoresProyecto\" SET proyecto = '{proyecto}' WHERE gestor = '{gestor}');"
         cursor.execute(query)
         connection.commit()
         cursor.close()
