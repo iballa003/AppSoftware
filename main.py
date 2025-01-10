@@ -5,7 +5,7 @@ app = Flask(__name__)
 # Lista de métodos TODO
 # Login *
 # Crear proyecto *
-# Asignar gestor a proyecto.
+# Asignar gestor a proyecto. ?
 # Asignar cliente a proyecto.
 # Crear tareas a proyecto(debe estar asignado)
 # Asignar programador a proyecto
@@ -113,9 +113,50 @@ def crear_proyecto():
 def asignar_gestor_proyecto():
     body_request = request.json
 
-    user = body_request["usuario"]
-    passw = body_request["passwd"]
+    gestor = body_request["gestor"]
+    proyecto = body_request["proyecto"]
+    #fecha_asignacion = body_request["fecha_asignacion"]
 
+    # Datos base de datos
+    host = "localhost"
+    port = "5432"
+    dbname = "alexsoft"
+    user = "postgres"
+    password = "csas1234"
+
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            port=port,
+            dbname=dbname,
+            user=user,
+            password=password,
+            options="-c search_path=public"
+        )
+        # Crear un cursor para ejecutar
+        cursor = connection.cursor()
+        gestor_exist = ejecutar_sql(
+            f"SELECT * FROM public.\"Gestor\" WHERE id = '{gestor}';")
+
+        if len(gestor_exist.json) == 0:
+            return jsonify({"error": "No existe el gestor"}), 404
+
+        proyecto_exist = ejecutar_sql(
+            f"SELECT * FROM public.\"Proyecto\" WHERE id = '{proyecto}';")
+
+        if len(proyecto_exist.json) == 0:
+            return jsonify({"error": "No existe el proyecto"}), 404
+
+        query = f"INSERT INTO public.\"GestoresProyecto\" (gestor, proyecto, fecha_asignacion) VALUES ('{gestor}', '{proyecto}', NOW());"
+        cursor.execute(query)
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return jsonify({"Resultado": "Se ha asignado el gestor al proyecto deseado"})
+
+    except psycopg2.Error as e:
+        print("Error", e)
 
 
 @app.route('/proyecto/proyectos', methods=['GET'])
