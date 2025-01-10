@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 # Lista de métodos TODO
 # Login *
-# Crear proyecto
+# Crear proyecto *
 # Asignar gestor a proyecto.
 # Asignar cliente a proyecto.
 # Crear tareas a proyecto(debe estar asignado)
@@ -70,6 +70,53 @@ def obtener_programadores():
 def hola_mundo():
         holaMundo = [{'msg': 'Hola, mundo!'}]
         return jsonify(holaMundo)
+
+@app.route('/proyecto', methods=['POST'])
+def crear_proyecto():
+    body_request = request.json
+
+    name = body_request["nombre"]
+    description = body_request["descripcion"]
+    init_date = body_request["fecha_inicio"]
+    client = body_request["cliente"]
+
+    # Datos base de datos
+    host = "localhost"
+    port = "5432"
+    dbname = "alexsoft"
+    user = "postgres"
+    password = "csas1234"
+
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            port=port,
+            dbname=dbname,
+            user=user,
+            password=password,
+            options="-c search_path=public"
+        )
+        # Crear un cursor para ejecutar
+        cursor = connection.cursor()
+        query = f"INSERT INTO public.\"Proyecto\" (nombre, descripcion, fecha_creacion, fecha_inicio, fecha_finalizacion, cliente) VALUES ('{name}', '{description}', NOW(), '{init_date}', null, '{client}');"
+        cursor.execute(query)
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return jsonify({"Resultado": "Se ha creado el registro"})
+
+    except psycopg2.Error as e:
+        print("Error", e)
+
+@app.route('/gestorproyecto', methods=['POST'])
+def asignar_gestor_proyecto():
+    body_request = request.json
+
+    user = body_request["usuario"]
+    passw = body_request["passwd"]
+
+
 
 @app.route('/proyecto/proyectos', methods=['GET'])
 def obtener_proyectos():
@@ -154,7 +201,6 @@ def gestor_login():
         #
         cursor.execute(query)
         is_logged = ejecutar_sql(f"SELECT * FROM public.\"Gestor\" WHERE usuario = '{username}' AND passwd = '{passwd}';")
-        gestor = cursor.fetchone()
 
         if len(is_logged.json) == 0:
             return jsonify({"error": "Error en el login"}), 404
