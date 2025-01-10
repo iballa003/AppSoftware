@@ -316,6 +316,10 @@ def obtener_proyectos():
         result = ejecutar_sql('SELECT * FROM public."Proyecto";')
         return result
 
+def obtener_tareas_no_asignadas():
+    result = ejecutar_sql('SELECT * FROM public."Tarea WHERE ";')
+    return result
+
 @app.route('/proyecto/proyectos_activos', methods=['GET'])
 def obtener_proyectos_activos():
         result = ejecutar_sql('SELECT * FROM public."Proyecto" WHERE fecha_finalizacion IS NOT NULL;')
