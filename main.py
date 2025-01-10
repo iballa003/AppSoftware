@@ -8,8 +8,8 @@ app = Flask(__name__)
 # Asignar gestor a proyecto. *
 # Asignar cliente a proyecto. *
 # Crear tareas a proyecto(debe estar asignado)
-# Asignar programador a proyecto
-# asignar programadores a tareas.
+# Asignar programador a proyecto *
+# asignar programadores a tareas. *
 # obtener programadores *
 # obtener proyectos(activos o todos) *
 # obtener tareas de un proyecto(sin asignar o asignado)
@@ -109,6 +109,9 @@ def crear_proyecto():
     except psycopg2.Error as e:
         print("Error", e)
 
+@app.route('/tarea', methods=['POST'])
+def crear_tarea_proyecto():
+    pass
 @app.route('/gestorproyecto', methods=['POST'])
 def asignar_gestor_proyecto():
     body_request = request.json
@@ -149,6 +152,106 @@ def asignar_gestor_proyecto():
 
         #query = f"INSERT INTO public.\"GestoresProyecto\" (gestor, proyecto, fecha_asignacion) VALUES ('{gestor}', '{proyecto}', NOW());"
         query = f"UPDATE public.\"GestoresProyecto\" SET proyecto = '{proyecto}' WHERE gestor = '{gestor}';"
+        cursor.execute(query)
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return jsonify({"Resultado": "Se ha asignado el gestor al proyecto deseado"})
+
+    except psycopg2.Error as e:
+        print("Error", e)
+
+@app.route('/programador/proyecto', methods=['POST'])
+def asignar_programador_proyecto():
+    body_request = request.json
+
+    programador = body_request["programador"]
+    proyecto = body_request["proyecto"]
+    # fecha_asignacion = body_request["fecha_asignacion"]
+
+    # Datos base de datos
+    host = "localhost"
+    port = "5432"
+    dbname = "alexsoft"
+    user = "postgres"
+    password = "csas1234"
+
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            port=port,
+            dbname=dbname,
+            user=user,
+            password=password,
+            options="-c search_path=public"
+        )
+        # Crear un cursor para ejecutar
+        cursor = connection.cursor()
+        gestor_exist = ejecutar_sql(
+            f"SELECT * FROM public.\"Programador\" WHERE id = '{programador}';")
+
+        if len(gestor_exist.json) == 0:
+            return jsonify({"error": "No existe el gestor"}), 404
+
+        proyecto_exist = ejecutar_sql(
+            f"SELECT * FROM public.\"Proyecto\" WHERE id = '{proyecto}';")
+
+        if len(proyecto_exist.json) == 0:
+            return jsonify({"error": "No existe el proyecto"}), 404
+
+        # query = f"INSERT INTO public.\"GestoresProyecto\" (gestor, proyecto, fecha_asignacion) VALUES ('{gestor}', '{proyecto}', NOW());"
+        query = f"UPDATE public.\"ProgramadoresProyecto\" SET proyecto = '{proyecto}' WHERE programador = '{programador}';"
+        cursor.execute(query)
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return jsonify({"Resultado": "Se ha asignado el programador al proyecto deseado"})
+
+    except psycopg2.Error as e:
+        print("Error", e)
+
+@app.route('/programador/tarea', methods=['POST'])
+def asignar_tarea_proyecto():
+    body_request = request.json
+
+    programador = body_request["programador"]
+    tarea = body_request["tarea"]
+    # fecha_asignacion = body_request["fecha_asignacion"]
+
+    # Datos base de datos
+    host = "localhost"
+    port = "5432"
+    dbname = "alexsoft"
+    user = "postgres"
+    password = "csas1234"
+
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            port=port,
+            dbname=dbname,
+            user=user,
+            password=password,
+            options="-c search_path=public"
+        )
+        # Crear un cursor para ejecutar
+        cursor = connection.cursor()
+        gestor_exist = ejecutar_sql(
+            f"SELECT * FROM public.\"Programador\" WHERE id = '{programador}';")
+
+        if len(gestor_exist.json) == 0:
+            return jsonify({"error": "No existe el programador"}), 404
+
+        proyecto_exist = ejecutar_sql(
+            f"SELECT * FROM public.\"Tarea\" WHERE id = '{tarea}';")
+
+        if len(proyecto_exist.json) == 0:
+            return jsonify({"error": "No existe la tarea"}), 404
+
+        # query = f"INSERT INTO public.\"GestoresProyecto\" (gestor, proyecto, fecha_asignacion) VALUES ('{gestor}', '{proyecto}', NOW());"
+        query = f"UPDATE public.\"Tarea\" SET programador = '{programador}' WHERE id = '{tarea}';"
         cursor.execute(query)
         connection.commit()
         cursor.close()
