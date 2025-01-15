@@ -7,7 +7,7 @@ app = Flask(__name__)
 # Crear proyecto *
 # Asignar gestor a proyecto. *
 # Asignar cliente a proyecto. *
-# Crear tareas a proyecto(debe estar asignado)
+# Crear tareas a proyecto(debe estar asignado) *
 # Asignar programador a proyecto *
 # asignar programadores a tareas. *
 # obtener programadores *
@@ -111,7 +111,49 @@ def crear_proyecto():
 
 @app.route('/tarea', methods=['POST'])
 def crear_tarea_proyecto():
-    pass
+    body_request = request.json
+
+    nombre = body_request["nombre"]
+    descripcion = body_request["descripcion"]
+    estimacion = body_request["estimacion"]
+    programador = body_request["programador"]
+    proyecto = body_request["proyecto"]
+
+    # Datos base de datos
+    host = "localhost"
+    port = "5432"
+    dbname = "alexsoft"
+    user = "postgres"
+    password = "csas1234"
+
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            port=port,
+            dbname=dbname,
+            user=user,
+            password=password,
+            options="-c search_path=public"
+        )
+        # Crear un cursor para ejecutar
+        cursor = connection.cursor()
+        query = f"INSERT INTO public.\"Tarea\" (nombre, descripcion, estimacion, fecha_creacion, fecha_finalizacion, programador, proyecto) VALUES ('{nombre}', '{descripcion}', '{estimacion}', NOW(), null, '{programador}', '{proyecto}');"
+        cursor.execute(query)
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return jsonify({"Resultado": "Se ha creado el registro"})
+
+    except psycopg2.Error as e:
+        print("Error", e)
+
+@app.route('/tarea/tareas', methods=['GET'])
+def get_tarea_proyecto():
+    result = ejecutar_sql(
+        'SELECT e.nombre, CASE WHEN g.empleado IS NOT NULL THEN \'Es gestor\' WHEN p.empleado IS NOT NULL THEN \'Es programador\' ELSE \'Otro puesto\' END AS tipo_puesto FROM public."Empleado" e LEFT JOIN public."Gestor" g ON e.id = g.empleado LEFT JOIN public."Programador" p ON e.id = p.empleado;')
+    return result
+
 @app.route('/gestorproyecto', methods=['POST'])
 def asignar_gestor_proyecto():
     body_request = request.json
