@@ -12,7 +12,7 @@ app = Flask(__name__)
 # asignar programadores a tareas. *
 # obtener programadores *
 # obtener proyectos(activos o todos) *
-# obtener tareas de un proyecto(sin asignar o asignado)
+# obtener tareas de un proyecto(sin asignar o asignado) *
 
 def ejecutar_sql(sql_text):
     # Datos base de datos
