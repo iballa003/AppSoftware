@@ -8,8 +8,8 @@ app = Flask(__name__)
 # Asignar gestor a proyecto. *
 # Asignar cliente a proyecto. *
 # Crear tareas a proyecto(debe estar asignado) *
-# Asignar programador a proyecto *
-# asignar programadores a tareas. *
+# Asignar programador a proyecto. *
+# Asignar programadores a tareas. *
 # obtener programadores *
 # obtener proyectos(activos o todos) *
 # obtener tareas de un proyecto(sin asignar o asignado) *
