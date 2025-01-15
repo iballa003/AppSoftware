@@ -354,7 +354,7 @@ def obtener_proyectos():
 
 @app.route('/tarea/tareas/no-asignadas', methods=['GET'])
 def obtener_tareas_no_asignadas():
-    proyecto_id = request.args.get('id')
+    proyecto_id = request.args.get('proyecto_id')
     if not proyecto_id:
         return
     result = ejecutar_sql(
@@ -363,7 +363,7 @@ def obtener_tareas_no_asignadas():
 
 @app.route('/tarea/tareas/asignadas', methods=['GET'])
 def obtener_tarea_asignadas():
-    proyecto_id = request.args.get('id')
+    proyecto_id = request.args.get('proyecto_id')
     if not proyecto_id:
         return
     result = ejecutar_sql(
