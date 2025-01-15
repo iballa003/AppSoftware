@@ -148,12 +148,6 @@ def crear_tarea_proyecto():
     except psycopg2.Error as e:
         print("Error", e)
 
-@app.route('/tarea/tareas', methods=['GET'])
-def get_tarea_proyecto():
-    result = ejecutar_sql(
-        'SELECT e.nombre, CASE WHEN g.empleado IS NOT NULL THEN \'Es gestor\' WHEN p.empleado IS NOT NULL THEN \'Es programador\' ELSE \'Otro puesto\' END AS tipo_puesto FROM public."Empleado" e LEFT JOIN public."Gestor" g ON e.id = g.empleado LEFT JOIN public."Programador" p ON e.id = p.empleado;')
-    return result
-
 @app.route('/gestorproyecto', methods=['POST'])
 def asignar_gestor_proyecto():
     body_request = request.json
@@ -210,7 +204,7 @@ def asignar_programador_proyecto():
 
     programador = body_request["programador"]
     proyecto = body_request["proyecto"]
-    # fecha_asignacion = body_request["fecha_asignacion"]
+    fecha_asignacion = body_request["fecha_asignacion"]
 
     # Datos base de datos
     host = "localhost"
@@ -242,8 +236,8 @@ def asignar_programador_proyecto():
         if len(proyecto_exist.json) == 0:
             return jsonify({"error": "No existe el proyecto"}), 404
 
-        # query = f"INSERT INTO public.\"GestoresProyecto\" (gestor, proyecto, fecha_asignacion) VALUES ('{gestor}', '{proyecto}', NOW());"
-        query = f"UPDATE public.\"ProgramadoresProyecto\" SET proyecto = '{proyecto}' WHERE programador = '{programador}';"
+        query = f"INSERT INTO public.\"ProgramadoresProyecto\" (programador, proyecto, fecha_asignacion) VALUES ('{programador}', '{proyecto}', '{fecha_asignacion}');"
+        #query = f"UPDATE public.\"ProgramadoresProyecto\" SET proyecto = '{proyecto}' WHERE programador = '{programador}';"
         cursor.execute(query)
         connection.commit()
         cursor.close()
@@ -358,8 +352,22 @@ def obtener_proyectos():
         result = ejecutar_sql('SELECT * FROM public."Proyecto";')
         return result
 
+@app.route('/tarea/tareas/no-asignadas', methods=['GET'])
 def obtener_tareas_no_asignadas():
-    result = ejecutar_sql('SELECT * FROM public."Tarea WHERE ";')
+    proyecto_id = request.args.get('id')
+    if not proyecto_id:
+        return
+    result = ejecutar_sql(
+        f"SELECT public.\"Tarea\".* FROM public.\"Tarea\", public.\"Proyecto\" WHERE public.\"Tarea\".programador IS NOT NULL AND public.\"Proyecto\".id = '{proyecto_id}';")
+    return result
+
+@app.route('/tarea/tareas/asignadas', methods=['GET'])
+def obtener_tarea_asignadas():
+    proyecto_id = request.args.get('id')
+    if not proyecto_id:
+        return
+    result = ejecutar_sql(
+        f"SELECT public.\"Tarea\".* FROM public.\"Tarea\", public.\"Proyecto\" WHERE public.\"Tarea\".programador IS NULL AND public.\"Proyecto\".id = '{proyecto_id}';")
     return result
 
 @app.route('/proyecto/proyectos_activos', methods=['GET'])
